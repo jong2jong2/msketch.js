@@ -1,0 +1,126 @@
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+    <script src="./msketch.js"></script>
+</head>
+<body>
+    <script>
+    /*! msketch.js v0.1 July 2019 */
+    /**
+     * @author hanjong.kim@kaist.ac.kr, juwhan.k@gmial.com
+     * Developed ID KAIST CIDR Lab. for EDISON Project, KISTI
+     *
+     * Example Code of Four-bar Linkage with p5.js
+     */
+
+        var angle = 0;
+        var assembly, calculator, anchor, motor;
+        var links = [];
+        var paths = [];
+
+        function setup(){
+            createCanvas(600, 600);
+
+            assembly = new MSKETCH.Assembly();
+            calculator = new MSKETCH.Calculator();
+            anchor = new MSKETCH.Anchor();
+
+            // Points
+            var p_c1 = new MSKETCH.Point2D(-150.0, 0.0);
+            var p_c2 = new MSKETCH.Point2D(-150.0, -50.0);
+            var p_f1 = new MSKETCH.Point2D(150.0, 0.0);
+            var p_f2 = new MSKETCH.Point2D(120.0, -80.0);
+            var p_target = new MSKETCH.Point2D(0.0, -150.0);
+
+            // Anchor Points
+            anchor.addGlobalPoint(p_c1);
+            anchor.addGlobalPoint(p_f1);
+            assembly.addAnchor(anchor);
+
+            // Links
+            var crank = new MSKETCH.Link({point: p_c1});
+                        crank.addGlobalPoint(p_c2);
+            var follower = new MSKETCH.Link({point: p_f1});
+                        follower.addGlobalPoint(p_f2);
+            var coupler = new MSKETCH.Link({point: p_c2});
+                        coupler.addGlobalPoint(p_f2);
+                        coupler.addGlobalPoint(p_target);
+
+            assembly.addElement(crank);
+            assembly.addElement(follower);
+            assembly.addElement(coupler);
+
+            links.push(crank);
+            links.push(follower);
+            links.push(coupler);
+
+            // Set Constraints
+            var c_c1 = new MSKETCH.CoaxialConstraint({
+                link1: anchor,      point1: anchor.getPoint(0),
+                link2: crank,       point2: crank.getPoint(0)
+            });
+            assembly.addConstraint(c_c1);
+            var c_c2 = new MSKETCH.CoaxialConstraint({
+                link1: crank,       point1: crank.getPoint(1),
+                link2: coupler,     point2: coupler.getPoint(0)
+            });
+            assembly.addConstraint(c_c2);
+            var c_f1 = new MSKETCH.CoaxialConstraint({
+                link1: anchor,      point1: anchor.getPoint(1),
+                link2: follower,    point2: follower.getPoint(0)
+            });
+            assembly.addConstraint(c_f1);
+            var c_f2 = new MSKETCH.CoaxialConstraint({
+                link1: follower,    point1: follower.getPoint(1),
+                link2: coupler,     point2: coupler.getPoint(1)
+            });
+            assembly.addConstraint(c_f2);
+
+            // Motors
+            motor = new MSKETCH.Motor({cc: c_c1, link1: anchor, link2: crank})
+            assembly.addMotor(motor);
+
+            assembly.savePositions();
+            calculator.onStart(assembly);
+
+        }
+
+        function draw(){
+            background(0);
+            translate(300, 300);
+            noFill();
+            stroke(255);
+
+            motor.setAngle(angle);
+            angle+=0.05;
+
+            calculator.calculateAssembly(assembly);
+
+            // Drawing Lines
+            for(var i in links){
+                var link = links[i];
+                for(var p = 0; p < link.getPointList().length - 1; p++){
+                    var p_1 = link.getGlobalPoint(p);
+                    var p_2 = link.getGlobalPoint(p+1);
+                    line(p_1.x, p_1.y, p_2.x, p_2.y);
+                }
+                if(link.getPointList().length > 2){
+                    var p_1 = link.getGlobalPoint(0);
+                    var p_2 = link.getGlobalPoint(link.getPointList().length-1);
+                    line(p_1.x, p_1.y, p_2.x, p_2.y);
+                }
+            }
+
+            // Find Target
+            paths.push({x: links[2].getGlobalPoint(2).x, y: links[2].getGlobalPoint(2).y})
+
+            stroke(255, 0, 0);
+            for(var i in paths){
+                point(paths[i].x, paths[i].y);
+            }
+            if(paths.length > 1024) paths.splice(0, 1);
+        }
+    </script>
+</body>
+</html>
