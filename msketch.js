@@ -485,8 +485,10 @@ var MSKETCH = {author: "CIDR.IDKAIST"};
         }
         return _rv;
     }
-    // MSKETCH.LinkGroup.prototype.findOutgoingSliderConstraint = function(_cl){
-    // }
+    MSKETCH.LinkGroup.prototype.findOutgoingSliderConstraint = function(_cl){
+        var _rv = [];
+        return _rv;
+    }
     MSKETCH.LinkGroup.prototype.findOutgoingAngularConstraint = function(_cl){
         var _rv = [];
 
@@ -1034,8 +1036,8 @@ var MSKETCH = {author: "CIDR.IDKAIST"};
         	if(cci instanceof MSKETCH.CCI){
     	      	var lg = this.findGroupByLink(_groupList, cci.constraint.getLink(cci.target));
 
-    			if(!duplicateLGList.contains(lg)){
-    				if(!connectedLGList.contains(lg)){
+    			if(duplicateLGList.indexOf(lg)!=-1){
+    				if(connectedLGList.indexOf(lg)!=-1){
     					connectedLGList.push(lg);
     				}else{
     			  		duplicateLGList.push(lg);
